@@ -28,7 +28,9 @@ echo "Found JAR: $JAR"
 IMAGE="gar2000b/xp-ohlcv-generator-service"
 
 echo "Building Docker image: $IMAGE:$VERSION"
-docker build -t "$IMAGE:$VERSION" .
+docker build \
+  --build-arg APP_VERSION="$VERSION" \
+  -t "$IMAGE:$VERSION" .
 
 echo "Tagging image as latest"
 docker tag "$IMAGE:$VERSION" "$IMAGE:latest"
