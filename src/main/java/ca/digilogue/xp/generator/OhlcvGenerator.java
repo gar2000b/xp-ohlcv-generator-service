@@ -22,6 +22,7 @@ public class OhlcvGenerator implements Runnable {
     
     private volatile boolean running = false;
     private double currentPrice;
+    private volatile OhlcvCandle latestCandle; // Latest generated candle (thread-safe access)
     
     public OhlcvGenerator(String symbol, double basePrice, double volatility, InfluxDbService influxDbService) {
         this.symbol = symbol;
@@ -40,6 +41,9 @@ public class OhlcvGenerator implements Runnable {
         while (running) {
             try {
                 OhlcvCandle candle = generateCandle();
+                
+                // Store the latest candle (thread-safe - volatile ensures visibility)
+                latestCandle = candle;
                 
                 // Write to InfluxDB
                 influxDbService.writeCandle(candle);
@@ -116,6 +120,25 @@ public class OhlcvGenerator implements Runnable {
     
     public boolean isRunning() {
         return running;
+    }
+    
+    /**
+     * Gets the latest generated candle for this symbol.
+     * Returns null if no candle has been generated yet.
+     * 
+     * @return The latest OHLCV candle, or null if not yet generated
+     */
+    public OhlcvCandle getLatestCandle() {
+        return latestCandle;
+    }
+    
+    /**
+     * Gets the symbol this generator is producing candles for.
+     * 
+     * @return The trading symbol (e.g., "MEGA/USD")
+     */
+    public String getSymbol() {
+        return symbol;
     }
 }
 

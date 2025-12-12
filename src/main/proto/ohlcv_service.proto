@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package ca.digilogue.xp.grpc;
+
+option java_package = "ca.digilogue.xp.grpc";
+option java_outer_classname = "OhlcvServiceProto";
+
+/**
+ * OHLCV (Open, High, Low, Close, Volume) gRPC Service
+ * Provides access to real-time OHLCV candle data.
+ */
+service OhlcvService {
+  /**
+   * Gets the latest OHLCV candle for a given symbol.
+   * 
+   * @param request Contains the trading symbol (e.g., "MEGA/USD")
+   * @return The latest OHLCV candle data for the symbol
+   */
+  rpc GetLatestCandle(GetLatestCandleRequest) returns (OhlcvCandleResponse);
+}
+
+/**
+ * Request message for getting the latest candle.
+ */
+message GetLatestCandleRequest {
+  string symbol = 1;  // Trading symbol (e.g., "MEGA/USD", "HELIO/USD", "RUCKS/USD")
+}
+
+/**
+ * Response message containing OHLCV candle data.
+ */
+message OhlcvCandleResponse {
+  string symbol = 1;        // Trading symbol
+  double open = 2;          // Opening price
+  double high = 3;          // Highest price
+  double low = 4;           // Lowest price
+  double close = 5;         // Closing price
+  double volume = 6;        // Trading volume
+  int64 timestamp = 7;      // Timestamp in nanoseconds since epoch
+}
+

@@ -154,4 +154,26 @@ public class App {
         // Last-resort fallback for local dev
         return "DEV";
     }
+
+    /**
+     * Gets the generator for a specific symbol.
+     * 
+     * @param symbol The trading symbol (e.g., "MEGA/USD")
+     * @return The OhlcvGenerator for the symbol, or null if not found
+     */
+        public static OhlcvGenerator getGenerator(String symbol) {
+            return generators.stream()
+                .filter(g -> g.getSymbol().equals(symbol))
+                .findFirst()
+                .orElse(null);
+        }
+        
+        /**
+         * Gets all active generators.
+         * 
+         * @return A copy of the generators list (to prevent external modification)
+         */
+        public static List<OhlcvGenerator> getGenerators() {
+            return new ArrayList<>(generators);
+        }
 }
