@@ -17,6 +17,15 @@ service OhlcvService {
    * @return The latest OHLCV candle data for the symbol
    */
   rpc GetLatestCandle(GetLatestCandleRequest) returns (OhlcvCandleResponse);
+
+  /**
+   * Streams all live OHLCV candles from all active generators in real-time.
+   * Sends a collection of all current candles every second.
+   * 
+   * @param request Empty request (no parameters needed)
+   * @return Stream of AllCandlesResponse containing all current candles
+   */
+  rpc StreamAllLiveCandles(StreamAllLiveCandlesRequest) returns (stream AllCandlesResponse);
 }
 
 /**
@@ -37,5 +46,19 @@ message OhlcvCandleResponse {
   double close = 5;         // Closing price
   double volume = 6;        // Trading volume
   int64 timestamp = 7;      // Timestamp in nanoseconds since epoch
+}
+
+/**
+ * Request message for streaming all live candles.
+ */
+message StreamAllLiveCandlesRequest {
+  // Empty request - no parameters needed
+}
+
+/**
+ * Response message containing a collection of all current OHLCV candles.
+ */
+message AllCandlesResponse {
+  repeated OhlcvCandleResponse candles = 1;  // Collection of all current candles from all generators
 }
 
