@@ -13,7 +13,7 @@ service OhlcvService {
   /**
    * Gets the latest OHLCV candle for a given symbol.
    * 
-   * @param request Contains the trading symbol (e.g., "MEGA/USD")
+   * @param request Contains the trading symbol (e.g., "MEGA-USD")
    * @return The latest OHLCV candle data for the symbol
    */
   rpc GetLatestCandle(GetLatestCandleRequest) returns (OhlcvCandleResponse);
@@ -23,7 +23,7 @@ service OhlcvService {
  * Request message for getting the latest candle.
  */
 message GetLatestCandleRequest {
-  string symbol = 1;  // Trading symbol (e.g., "MEGA/USD", "HELIO/USD", "RUCKS/USD")
+  string symbol = 1;  // Trading symbol (e.g., "MEGA-USD", "HELIO-USD", "RUCKS-USD")
 }
 
 /**

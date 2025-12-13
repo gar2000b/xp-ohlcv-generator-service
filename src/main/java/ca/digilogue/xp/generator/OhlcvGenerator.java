@@ -135,7 +135,7 @@ public class OhlcvGenerator implements Runnable {
     /**
      * Gets the symbol this generator is producing candles for.
      * 
-     * @return The trading symbol (e.g., "MEGA/USD")
+     * @return The trading symbol (e.g., "MEGA-USD")
      */
     public String getSymbol() {
         return symbol;

@@ -56,9 +56,9 @@ public class App {
         
         // Define symbols to generate
         List<SymbolConfig> symbolConfigs = List.of(
-            new SymbolConfig("MEGA/USD", 100.0, 2.0),
-            new SymbolConfig("HELIO/USD", 75.0, 1.5),
-            new SymbolConfig("RUCKS/USD", 50.0, 3.0)
+            new SymbolConfig("MEGA-USD", 100.0, 2.0),
+            new SymbolConfig("HELIO-USD", 75.0, 1.5),
+            new SymbolConfig("RUCKS-USD", 50.0, 3.0)
         );
         
         // Create thread pool with one thread per generator
@@ -158,7 +158,7 @@ public class App {
     /**
      * Gets the generator for a specific symbol.
      * 
-     * @param symbol The trading symbol (e.g., "MEGA/USD")
+     * @param symbol The trading symbol (e.g., "MEGA-USD")
      * @return The OhlcvGenerator for the symbol, or null if not found
      */
         public static OhlcvGenerator getGenerator(String symbol) {
