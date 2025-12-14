@@ -26,13 +26,14 @@ public class InfoController {
 
     @GetMapping("/info")
     public ResponseEntity<Info> getServiceInfo() {
-        Info response = new Info("XP OHLCV Generator Service", App.version);
+        Info response = new Info("XP OHLCV Generator Service", App.version, App.instanceId);
 
         // Log JSON-style representation
         log.info(
-                "GET /info JSON Response: {{\"appName\":\"{}\",\"version\":\"{}\"}}",
+                "GET /info JSON Response: {{\"appName\":\"{}\",\"version\":\"{}\",\"instanceId\":\"{}\"}}",
                 response.getAppName(),
-                response.getVersion()
+                response.getVersion(),
+                response.getInstanceId()
         );
 
         return ResponseEntity.ok(response); // 200 OK
