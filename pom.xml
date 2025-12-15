@@ -89,6 +89,16 @@
       <artifactId>spring-kafka</artifactId>
     </dependency>
 
+    <!-- Jackson for JSON serialization (required by JsonSerializer) -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.datatype</groupId>
+      <artifactId>jackson-datatype-jsr310</artifactId>
+    </dependency>
+
     <!-- gRPC Dependencies -->
     <!-- gRPC Spring Boot Starter (server and client support) -->
     <dependency>
