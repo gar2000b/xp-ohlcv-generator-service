@@ -1,12 +1,15 @@
-package ca.digilogue.xp.grpc;
+package ca.digilogue.xp.grpc.impl;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import ca.digilogue.xp.App;
 import ca.digilogue.xp.generator.OhlcvCandle;
 import ca.digilogue.xp.generator.OhlcvGenerator;
+import ca.digilogue.xp.grpc.OhlcvServiceGrpc;
+import ca.digilogue.xp.grpc.OhlcvServiceProto;
 import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.server.service.GrpcService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * gRPC service implementation for OHLCV candle data.
