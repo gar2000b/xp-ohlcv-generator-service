@@ -11,14 +11,14 @@
 
   <groupId>ca.digilogue.xp</groupId>
   <artifactId>xp-ohlcv-generator-service</artifactId>
-  <version>0.0.10</version>
+  <version>0.0.11-SNAPSHOT</version>
   <name>xp-ohlcv-generator-service</name>
   <description>XP OHLCV Generator Spring Boot microservice</description>
 
   <scm>
     <connection>scm:git:https://github.com/gar2000b/xp-ohlcv-generator-service.git</connection>
     <developerConnection>scm:git:https://github.com/gar2000b/xp-ohlcv-generator-service.git</developerConnection>
-    <tag>v0.0.10</tag>
+    <tag>v0.0.5</tag>
   </scm>
 
   <packaging>jar</packaging>
