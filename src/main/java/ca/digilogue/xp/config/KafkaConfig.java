@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
-import org.springframework.kafka.support.serializer.JsonSerializer;
+import org.springframework.kafka.support.serializer.JacksonJsonSerializer;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -17,6 +17,7 @@ import java.util.Map;
 /**
  * Kafka configuration for publishing OHLCV candles collection.
  * Publishes the entire Map<String, OhlcvCandle> as a single JSON message.
+ * Uses Jackson 3's JacksonJsonSerializer (replaces deprecated JsonSerializer).
  */
 @Configuration
 public class KafkaConfig {
@@ -29,7 +30,7 @@ public class KafkaConfig {
         Map<String, Object> configProps = new HashMap<>();
         configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JacksonJsonSerializer.class);
         
         // Producer reliability settings
         configProps.put(ProducerConfig.ACKS_CONFIG, "all"); // Wait for all replicas
@@ -40,7 +41,7 @@ public class KafkaConfig {
     }
 
     @Bean
-    public KafkaTemplate<String, Map<String, OhlcvCandle>> kafkaTemplate() {
-        return new KafkaTemplate<>(producerFactory());
+    public KafkaTemplate<String, Map<String, OhlcvCandle>> kafkaTemplate(ProducerFactory<String, Map<String, OhlcvCandle>> producerFactory) {
+        return new KafkaTemplate<>(producerFactory);
     }
 }
