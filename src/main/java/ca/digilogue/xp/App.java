@@ -2,6 +2,7 @@ package ca.digilogue.xp;
 
 import ca.digilogue.xp.generator.OhlcvGenerator;
 import ca.digilogue.xp.service.InfluxDbService;
+import ca.digilogue.xp.service.KafkaService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
@@ -14,9 +15,14 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import ca.digilogue.xp.generator.OhlcvCandle;
 
 @SpringBootApplication
 public class App {
@@ -28,6 +34,11 @@ public class App {
     private static ExecutorService executorService;
     private static final List<OhlcvGenerator> generators = new ArrayList<>();
     private static ConfigurableApplicationContext applicationContext;
+    
+    // Collection to store latest candles from all generators (keyed by symbol)
+    private static final Map<String, OhlcvCandle> latestCandles = new ConcurrentHashMap<>();
+    private static Thread candleCollectorThread;
+    private static final AtomicBoolean candleCollectorRunning = new AtomicBoolean(false);
     
     /**
      * Symbol configuration: symbol name, base price, volatility
@@ -44,10 +55,14 @@ public class App {
         
         // Start OHLCV generators
         startGenerators();
+
+        // Start candle collector thread
+        startCandleCollector();
         
         // Register shutdown hook to stop generators gracefully
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             log.info("Shutting down OHLCV generators...");
+            stopCandleCollector();
             stopGenerators();
         }));
     }
@@ -85,6 +100,64 @@ public class App {
         }
         
         log.info("All OHLCV generators started ({} generators running)", generators.size());
+    }
+    
+    /**
+     * Starts a background thread that collects candles from all generators every second
+     * and publishes them to Kafka.
+     */
+    private static void startCandleCollector() {
+        // Get KafkaService from Spring context
+        KafkaService kafkaService = applicationContext.getBean(KafkaService.class);
+        
+        candleCollectorRunning.set(true);
+        candleCollectorThread = new Thread(() -> {
+            log.info("Candle collector thread started");
+            while (candleCollectorRunning.get()) {
+                try {
+                    // Collect latest candles from all generators
+                    for (OhlcvGenerator generator : generators) {
+                        OhlcvCandle candle = generator.getLatestCandle();
+                        if (candle != null) {
+                            latestCandles.put(candle.getSymbol(), candle);
+                            
+                            // Publish to Kafka
+                            kafkaService.publishCandle(candle);
+                        }
+                    }
+                    
+                    // Sleep for 1 second
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    log.warn("Candle collector thread interrupted");
+                    break;
+                } catch (Exception e) {
+                    log.error("Error collecting/publishing candles", e);
+                }
+            }
+            log.info("Candle collector thread stopped");
+        }, "candle-collector");
+        candleCollectorThread.setDaemon(true);
+        candleCollectorThread.start();
+        log.info("Candle collector thread started");
+    }
+    
+    /**
+     * Stops the candle collector thread gracefully.
+     */
+    private static void stopCandleCollector() {
+        candleCollectorRunning.set(false);
+        if (candleCollectorThread != null) {
+            candleCollectorThread.interrupt();
+            try {
+                candleCollectorThread.join(2000); // Wait up to 2 seconds
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                log.warn("Interrupted while waiting for candle collector thread to stop");
+            }
+        }
+        log.info("Candle collector stopped");
     }
     
     private static void stopGenerators() {
@@ -194,5 +267,24 @@ public class App {
          */
         public static List<OhlcvGenerator> getGenerators() {
             return new ArrayList<>(generators);
+        }
+        
+        /**
+         * Gets the latest candle for a specific symbol from the collection.
+         * 
+         * @param symbol The trading symbol (e.g., "MEGA-USD")
+         * @return The latest OHLCV candle for the symbol, or null if not found
+         */
+        public static OhlcvCandle getLatestCandle(String symbol) {
+            return latestCandles.get(symbol);
+        }
+        
+        /**
+         * Gets all latest candles from all generators.
+         * 
+         * @return A copy of the latest candles map (to prevent external modification)
+         */
+        public static Map<String, OhlcvCandle> getAllLatestCandles() {
+            return new ConcurrentHashMap<>(latestCandles);
         }
 }
