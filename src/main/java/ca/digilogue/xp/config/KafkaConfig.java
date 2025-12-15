@@ -15,8 +15,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Kafka configuration for publishing OHLCV candles.
- * Overrides Spring Boot auto-configuration to use JsonSerializer for OhlcvCandle.
+ * Kafka configuration for publishing OHLCV candles collection.
+ * Publishes the entire Map<String, OhlcvCandle> as a single JSON message.
  */
 @Configuration
 public class KafkaConfig {
@@ -25,7 +25,7 @@ public class KafkaConfig {
     private String bootstrapServers;
 
     @Bean
-    public ProducerFactory<String, OhlcvCandle> producerFactory() {
+    public ProducerFactory<String, Map<String, OhlcvCandle>> producerFactory() {
         Map<String, Object> configProps = new HashMap<>();
         configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
@@ -40,7 +40,7 @@ public class KafkaConfig {
     }
 
     @Bean
-    public KafkaTemplate<String, OhlcvCandle> kafkaTemplate() {
+    public KafkaTemplate<String, Map<String, OhlcvCandle>> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
     }
 }

@@ -9,64 +9,60 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 /**
  * Service layer for Kafka operations.
- * Provides business logic for publishing OHLCV candles to Kafka topics.
+ * Provides business logic for publishing OHLCV candles collection to Kafka topics.
  */
 @Service
 public class KafkaService {
 
     private static final Logger log = LoggerFactory.getLogger(KafkaService.class);
 
-    private final KafkaTemplate<String, OhlcvCandle> kafkaTemplate;
+    private final KafkaTemplate<String, Map<String, OhlcvCandle>> kafkaTemplate;
     private final String ohlcvTopic;
 
     @Autowired
     public KafkaService(
-            KafkaTemplate<String, OhlcvCandle> kafkaTemplate,
+            KafkaTemplate<String, Map<String, OhlcvCandle>> kafkaTemplate,
             @Value("${spring.kafka.topic.ohlcv:ohlcv-topic}") String ohlcvTopic) {
         this.kafkaTemplate = kafkaTemplate;
         this.ohlcvTopic = ohlcvTopic;
     }
 
     /**
-     * Publishes an OHLCV candle to the Kafka topic.
-     * Uses the symbol as the message key for partitioning.
+     * Publishes the entire collection of OHLCV candles to the Kafka topic as a single message.
+     * The message value will be a JSON representation of the Map<String, OhlcvCandle>.
      * 
-     * @param candle The OHLCV candle to publish
+     * @param candles Map of symbol to OHLCV candle (the entire collection)
      */
-    public void publishCandle(OhlcvCandle candle) {
+    public void publishCandlesCollection(Map<String, OhlcvCandle> candles) {
+        if (candles == null || candles.isEmpty()) {
+            log.debug("No candles to publish, skipping");
+            return;
+        }
+        
         try {
-            String key = candle.getSymbol();
-            CompletableFuture<SendResult<String, OhlcvCandle>> future = 
-                kafkaTemplate.send(ohlcvTopic, key, candle);
+            // Use a fixed key for the collection message (or could use timestamp-based key)
+            String key = "ohlcv-collection";
+            CompletableFuture<SendResult<String, Map<String, OhlcvCandle>>> future = 
+                kafkaTemplate.send(ohlcvTopic, key, candles);
             
             future.whenComplete((result, exception) -> {
                 if (exception == null) {
-                    log.debug("Successfully published candle for symbol: {} to topic: {}", 
-                        candle.getSymbol(), ohlcvTopic);
+                    log.debug("Successfully published candles collection ({} symbols) to topic: {}", 
+                        candles.size(), ohlcvTopic);
                 } else {
-                    log.error("Failed to publish candle for symbol: {} to topic: {}", 
-                        candle.getSymbol(), ohlcvTopic, exception);
+                    log.error("Failed to publish candles collection to topic: {}", 
+                        ohlcvTopic, exception);
                 }
             });
         } catch (Exception e) {
-            log.error("Error publishing candle for symbol: {} to topic: {}", 
-                candle.getSymbol(), ohlcvTopic, e);
+            log.error("Error publishing candles collection to topic: {}", 
+                ohlcvTopic, e);
             // Don't throw - allow collector to continue even if one publish fails
-        }
-    }
-
-    /**
-     * Publishes multiple candles to the Kafka topic.
-     * 
-     * @param candles Map of symbol to OHLCV candle
-     */
-    public void publishCandles(java.util.Map<String, OhlcvCandle> candles) {
-        for (OhlcvCandle candle : candles.values()) {
-            publishCandle(candle);
         }
     }
 }

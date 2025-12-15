@@ -120,10 +120,12 @@ public class App {
                         OhlcvCandle candle = generator.getLatestCandle();
                         if (candle != null) {
                             latestCandles.put(candle.getSymbol(), candle);
-                            
-                            // Publish to Kafka
-                            kafkaService.publishCandle(candle);
                         }
+                    }
+                    
+                    // Publish the entire collection to Kafka as a single message
+                    if (!latestCandles.isEmpty()) {
+                        kafkaService.publishCandlesCollection(latestCandles);
                     }
                     
                     // Sleep for 1 second
