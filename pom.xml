@@ -180,31 +180,6 @@
         <version>2.16.2</version>
       </plugin>
 
-      <!-- Protocol Buffers Compiler Plugin (generates Java code from .proto files) -->
-      <!-- 
-        NOTE: This plugin is configured but does NOT run automatically.
-        Generated classes (OhlcvServiceProto.java, OhlcvServiceGrpc.java) are manually 
-        maintained in src/main/java/ca/digilogue/xp/grpc/ to avoid Windows file lock issues 
-        during Maven release builds.
-        
-        To regenerate these classes manually (e.g., after updating .proto files), run:
-          mvn protobuf:compile protobuf:compile-custom
-        
-        Then manually copy the generated files from target/generated-sources/ to src/main/java/
-        and commit them to version control.
-      -->
-      <plugin>
-        <groupId>org.xolstice.maven.plugins</groupId>
-        <artifactId>protobuf-maven-plugin</artifactId>
-        <version>0.6.1</version>
-        <configuration>
-          <protocArtifact>com.google.protobuf:protoc:${protobuf.version}:exe:${os.detected.classifier}</protocArtifact>
-          <pluginId>grpc-java</pluginId>
-          <pluginArtifact>io.grpc:protoc-gen-grpc-java:${grpc.version}:exe:${os.detected.classifier}</pluginArtifact>
-        </configuration>
-        <!-- No executions block - plugin only runs when explicitly invoked -->
-      </plugin>
-
       <!-- OS Detector Plugin (required for protobuf-maven-plugin) -->
       <plugin>
         <groupId>kr.motd.maven</groupId>
